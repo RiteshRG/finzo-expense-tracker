@@ -1,0 +1,4 @@
+fastapi
+uvicorn[standard]
+jinja2
+pytest==8.3.5
