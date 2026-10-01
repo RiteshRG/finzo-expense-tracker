@@ -2,61 +2,48 @@
 
 {% block title %}Finzo — Track Every Rupee{% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="{{ request.url_for('static', path='/css/landing.css') }}">
+{% endblock %}
+
 {% block content %}
 
 <section class="hero">
     <div class="hero-inner">
-        <div class="hero-badge">Personal Finance Tracker</div>
-        <h1 class="hero-title">
-            Know where your<br>
-            <em>money goes</em>
-        </h1>
-        <p class="hero-subtitle">
-            Log expenses, understand your spending patterns,
-            and take control of your financial life —
-            one transaction at a time.
-        </p>
+        <div class="hero-logo" aria-label="Finzo">F</div>
+        <h1 class="hero-title">Track every rupee.<br><span>Know where it goes.</span></h1>
+        <p class="hero-subtitle">Finzo helps you log expenses, spot patterns, and stay on budget — without the spreadsheet headache.</p>
         <div class="hero-actions">
-            <a href="{{ url_for('register') }}" class="btn-primary">Start tracking free</a>
-            <a href="{{ url_for('login') }}" class="btn-ghost">Sign in</a>
+            <a href="{{ url_for('register') }}" class="btn-primary"><span class="hero-button-icon">↑</span>Create free account</a>
+            <a href="#features" class="btn-ghost"><span class="hero-button-icon hero-play-icon">⌕</span>See how it works</a>
         </div>
     </div>
     <div class="hero-visual">
-        <div class="mock-card">
-            <div class="mock-card-header">
-                <span class="mock-label">March 2026</span>
-                <span class="mock-total">₹12,450</span>
-            </div>
-            <div class="mock-bars">
-                <div class="mock-bar-row">
-                    <span class="mock-cat">Bills</span>
-                    <div class="mock-bar-track">
-                        <div class="mock-bar" style="width: 72%"></div>
-                    </div>
-                    <span class="mock-amt">₹4,500</span>
-                </div>
-                <div class="mock-bar-row">
-                    <span class="mock-cat">Food</span>
-                    <div class="mock-bar-track">
-                        <div class="mock-bar mock-bar-2" style="width: 52%"></div>
-                    </div>
-                    <span class="mock-amt">₹3,200</span>
-                </div>
-                <div class="mock-bar-row">
-                    <span class="mock-cat">Health</span>
-                    <div class="mock-bar-track">
-                        <div class="mock-bar mock-bar-3" style="width: 33%"></div>
-                    </div>
-                    <span class="mock-amt">₹2,050</span>
-                </div>
-                <div class="mock-bar-row">
-                    <span class="mock-cat">Transport</span>
-                    <div class="mock-bar-track">
-                        <div class="mock-bar mock-bar-4" style="width: 28%"></div>
-                    </div>
-                    <span class="mock-amt">₹1,800</span>
-                </div>
-            </div>
+        <div class="hero-chart" aria-label="Illustration of spending trends">
+            <div class="chart-currencies" aria-hidden="true"><span>₹</span><span>$</span><span>€</span><span>£</span></div>
+            <div class="chart-columns" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            <div class="chart-trend" aria-hidden="true"></div>
+        </div>
+    </div>
+    <div class="hero-summary">
+        <div class="summary-stats">
+            <article class="summary-card summary-month">
+                <span class="summary-icon" aria-hidden="true">↗</span>
+                <p>This month</p><strong>₹18,240</strong><small>+12% vs last month</small>
+            </article>
+            <article class="summary-card summary-budget">
+                <span class="summary-icon" aria-hidden="true">◎</span>
+                <p>Budget left</p><strong>₹6,760</strong><small>43% remaining</small>
+            </article>
+            <article class="summary-card summary-transactions">
+                <span class="summary-icon" aria-hidden="true">▤</span>
+                <p>Transactions</p><strong>34</strong><small>this month</small>
+            </article>
+        </div>
+        <div class="summary-categories">
+            <div class="category-item"><span class="category-icon category-food" aria-hidden="true">叉</span><span>Food</span><i><b></b></i></div>
+            <div class="category-item"><span class="category-icon category-travel" aria-hidden="true">✈</span><span>Travel</span><i><b></b></i></div>
+            <div class="category-item"><span class="category-icon category-bills" aria-hidden="true">ϟ</span><span>Bills</span><i><b></b></i></div>
         </div>
     </div>
 </section>
