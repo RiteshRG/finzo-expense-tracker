@@ -32,6 +32,11 @@ def terms(request: Request):
     return templates.TemplateResponse(request=request, name="terms.html", context={})
 
 
+@app.get("/privacy", name="privacy")
+def privacy(request: Request):
+    return templates.TemplateResponse(request=request, name="privacy.html", context={})
+
+
 # ------------------------------------------------------------------ #
 # Placeholder routes — students will implement these                  #
 # ------------------------------------------------------------------ #
