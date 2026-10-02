@@ -78,15 +78,31 @@ def execute_query(query: str, params=None, fetch: bool = False):
         connection.close()
 
 
+def ensure_user_name_column():
+    connection = get_connection()
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SHOW COLUMNS FROM users LIKE 'name'")
+            exists = cursor.fetchone()
+        if not exists:
+            with connection.cursor() as cursor:
+                cursor.execute("ALTER TABLE users ADD COLUMN name VARCHAR(255) NOT NULL DEFAULT '' AFTER id")
+            connection.commit()
+    finally:
+        connection.close()
+
+
 def init_db():
     try:
         execute_query(USER_TABLE_SQL)
+        ensure_user_name_column()
         execute_query(EXPENSE_TABLE_SQL)
     except Exception as exc:  # pragma: no cover - surfaced during setup
         raise RuntimeError(f"Database initialization failed: {exc}") from exc
 
 
 def seed_db():
+    demo_name = "Demo User"
     demo_email = "demo@finzo.local"
     demo_password = "demo-password-hash"
     sample_expenses = [
@@ -108,8 +124,8 @@ def seed_db():
         )
         if not user:
             user_id = execute_query(
-                "INSERT INTO users (email, password_hash) VALUES (%s, %s)",
-                (demo_email, demo_password),
+                "INSERT INTO users (name, email, password_hash) VALUES (%s, %s, %s)",
+                (demo_name, demo_email, demo_password),
                 fetch=False,
             )
         else:

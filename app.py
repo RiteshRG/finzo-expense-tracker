@@ -4,16 +4,21 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from database import init_db, seed_db
+from routes.auth import router as auth_router
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
+app.include_router(auth_router)
 
 
 @app.on_event("startup")
 def startup_event():
-    init_db()
-    seed_db()
+    try:
+        init_db()
+        seed_db()
+    except Exception:
+        pass
 
 
 # ------------------------------------------------------------------ #
@@ -23,11 +28,6 @@ def startup_event():
 @app.get("/", name="landing")
 def landing(request: Request):
     return templates.TemplateResponse(request=request, name="landing.html", context={})
-
-
-@app.get("/register", name="register")
-def register(request: Request):
-    return templates.TemplateResponse(request=request, name="register.html", context={})
 
 
 @app.get("/login", name="login")
