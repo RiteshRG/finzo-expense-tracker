@@ -15,7 +15,7 @@
         <p class="hero-subtitle">Finzo helps you log expenses, spot patterns, and stay on budget — without the spreadsheet headache.</p>
         <div class="hero-actions">
             <a href="{{ url_for('register') }}" class="btn-primary"><span class="hero-button-icon">↑</span>Create free account</a>
-            <a href="#features" class="btn-ghost"><span class="hero-button-icon hero-play-icon">⌕</span>See how it works</a>
+            <button type="button" class="btn-ghost" id="open-how-modal"><span class="hero-button-icon hero-play-icon">⌕</span>See how it works</button>
         </div>
     </div>
     <div class="hero-visual">
@@ -48,6 +48,18 @@
     </div>
 </section>
 
+<div class="how-modal" id="how-modal" role="dialog" aria-modal="true" aria-labelledby="how-modal-title" hidden>
+    <div class="how-modal-panel">
+        <div class="how-modal-header">
+            <h2 id="how-modal-title">See how Finzo works</h2>
+            <button type="button" class="how-modal-close" id="close-how-modal" aria-label="Close video">&times;</button>
+        </div>
+        <div class="how-modal-video">
+            <iframe id="how-modal-iframe" src="about:blank" title="Finzo overview video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+        </div>
+    </div>
+</div>
+
 <section class="features">
     <div class="features-inner">
         <div class="feature-card">
@@ -76,4 +88,38 @@
     </div>
 </section>
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+    (() => {
+        const modal = document.getElementById('how-modal');
+        const openButton = document.getElementById('open-how-modal');
+        const closeButton = document.getElementById('close-how-modal');
+        const videoFrame = document.getElementById('how-modal-iframe');
+        const videoUrl = 'https://www.youtube-nocookie.com/embed/ScMzIvxBSi4?autoplay=1&rel=0';
+
+        const closeModal = () => {
+            modal.hidden = true;
+            videoFrame.src = 'about:blank';
+            document.body.style.overflow = '';
+            openButton.focus();
+        };
+
+        openButton.addEventListener('click', () => {
+            modal.hidden = false;
+            videoFrame.src = videoUrl;
+            document.body.style.overflow = 'hidden';
+            closeButton.focus();
+        });
+
+        closeButton.addEventListener('click', closeModal);
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) closeModal();
+        });
+        document.addEventListener('keydown', (event) => {
+            if (!modal.hidden && event.key === 'Escape') closeModal();
+        });
+    })();
+</script>
 {% endblock %}
