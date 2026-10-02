@@ -1,5 +1,8 @@
-fastapi
+﻿fastapi
 uvicorn[standard]
 jinja2
 pymysql>=1.1.0,<2.0
+python-dotenv>=1.0.0
+werkzeug>=3.0.0
+email-validator>=2.0.0
 pytest==8.3.5

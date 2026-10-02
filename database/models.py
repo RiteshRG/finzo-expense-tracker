@@ -5,6 +5,7 @@ from datetime import datetime
 USER_TABLE_SQL = """
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -30,6 +31,7 @@ CREATE TABLE IF NOT EXISTS expenses (
 @dataclass
 class User:
     id: int | None = None
+    name: str = ""
     email: str = ""
     password_hash: str = ""
     created_at: datetime | None = None
