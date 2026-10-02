@@ -318,6 +318,77 @@
 .category-item:nth-child(2) i b { width: 48%; background: #527b58; }
 .category-item:nth-child(3) i b { width: 43%; background: #a6782f; }
 
+.how-modal[hidden] { display: none; }
+
+.how-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+    background: rgba(15, 15, 15, 0.72);
+}
+
+.how-modal-panel {
+    width: min(56rem, 100%);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--paper);
+    box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.3);
+}
+
+.how-modal-header {
+    min-height: 3.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 1.1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.how-modal-header h2 {
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    font-weight: 400;
+}
+
+.how-modal-close {
+    width: 2.25rem;
+    height: 2.25rem;
+    flex: 0 0 2.25rem;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    background: var(--paper-card);
+    color: var(--ink-soft);
+    cursor: pointer;
+    font: inherit;
+    font-size: 1.4rem;
+    line-height: 1;
+}
+
+.how-modal-close:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.how-modal-video {
+    aspect-ratio: 16 / 9;
+    background: #000;
+}
+
+.how-modal-video iframe {
+    width: 100%;
+    height: 100%;
+    display: block;
+    border: 0;
+}
+
 @media (max-width: 900px) {
     .hero {
         grid-template-columns: minmax(0, 1fr) minmax(15rem, 0.8fr);
