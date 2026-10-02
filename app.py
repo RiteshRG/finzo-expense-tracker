@@ -1,15 +1,33 @@
+import os
+
 import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from starlette.middleware.sessions import SessionMiddleware
 
+from dotenv import load_dotenv
 from database import init_db, seed_db
 from routes.auth import router as auth_router
+
+load_dotenv()
+
+session_secret = os.getenv("SESSION_SECRET_KEY")
+if not session_secret or len(session_secret) < 32:
+    raise RuntimeError(
+        "SESSION_SECRET_KEY must be set to a secret of at least 32 characters."
+    )
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 app.include_router(auth_router)
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=session_secret,
+    same_site="lax",
+    https_only=os.getenv("SESSION_COOKIE_SECURE", "").lower() in {"1", "true", "yes"},
+)
 
 
 @app.on_event("startup")
@@ -30,11 +48,6 @@ def landing(request: Request):
     return templates.TemplateResponse(request=request, name="landing.html", context={})
 
 
-@app.get("/login", name="login")
-def login(request: Request):
-    return templates.TemplateResponse(request=request, name="login.html", context={})
-
-
 @app.get("/terms", name="terms")
 def terms(request: Request):
     return templates.TemplateResponse(request=request, name="terms.html", context={})
@@ -48,11 +61,6 @@ def privacy(request: Request):
 # ------------------------------------------------------------------ #
 # Placeholder routes — students will implement these                  #
 # ------------------------------------------------------------------ #
-
-@app.get("/logout")
-def logout():
-    return "Logout — coming in Step 3"
-
 
 @app.get("/profile")
 def profile():

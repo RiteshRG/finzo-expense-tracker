@@ -1,9 +1,17 @@
 from typing import Any, Dict
 
-from werkzeug.security import generate_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from repositories.user_repository import create_user, get_user_by_email
-from schemas import UserRegistration
+from schemas import UserLogin, UserRegistration
+
+
+class InvalidCredentialsError(Exception):
+    pass
+
+
+class AuthenticationUnavailableError(Exception):
+    pass
 
 
 def hash_password(password: str) -> str:
@@ -33,4 +41,31 @@ def register_user(payload: UserRegistration) -> Dict[str, Any]:
         raise ValueError("Unable to process registration at this time. Please try again later.") from exc
 
 
-__all__ = ["register_user", "hash_password"]
+def authenticate_user(payload: UserLogin) -> Dict[str, Any]:
+    email = payload.email.strip().lower()
+    try:
+        user = get_user_by_email(email)
+    except Exception as exc:
+        raise AuthenticationUnavailableError from exc
+
+    if not user:
+        raise InvalidCredentialsError
+
+    try:
+        password_matches = check_password_hash(user["password_hash"], payload.password)
+    except (TypeError, ValueError) as exc:
+        raise InvalidCredentialsError from exc
+
+    if not password_matches:
+        raise InvalidCredentialsError
+
+    return {"id": user["id"], "name": user["name"]}
+
+
+__all__ = [
+    "register_user",
+    "hash_password",
+    "authenticate_user",
+    "InvalidCredentialsError",
+    "AuthenticationUnavailableError",
+]
