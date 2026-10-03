@@ -11,18 +11,14 @@ load_dotenv(override=True)
 DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     raise RuntimeError(
-        "DATABASE_URL is not set. Add it to your .env file, for example: "
-        "mysql+pymysql://root:password@localhost:3306/finzo_dev"
+        "DATABASE_URL is not set. Add a MySQL connection URL to your .env file."
     )
 
 
 def _get_connection_config(include_database: bool = True):
     parsed = urlparse(DATABASE_URL)
     if parsed.scheme not in {"mysql", "mysql+pymysql"}:
-        raise RuntimeError(
-            "DATABASE_URL must use the MySQL PyMySQL format, for example: "
-            "mysql+pymysql://username:password@localhost:3306/finzo_dev"
-        )
+        raise RuntimeError("DATABASE_URL must use a MySQL PyMySQL URL.")
 
     config = {
         "host": parsed.hostname or "localhost",
@@ -51,6 +47,8 @@ def get_connection():
                 "CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
             )
         connection.select_db(database_name)
+    with connection.cursor() as cursor:
+        cursor.execute("SET time_zone = '+00:00'")
     return connection
 
 

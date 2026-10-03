@@ -12,8 +12,35 @@ from werkzeug.security import generate_password_hash
 
 from app import app
 import routes.auth as auth_routes
+import routes.profile as profile_routes
 from schemas import UserLogin
 import services.auth_service as auth_service
+
+
+@pytest.fixture(autouse=True)
+def mock_profile_context(monkeypatch):
+    monkeypatch.setattr(
+        profile_routes,
+        "get_profile_context",
+        lambda user_id: {
+            "user": {
+                "id": user_id,
+                "name": "Finzo User",
+                "email": "user@example.com",
+                "initials": "FU",
+                "member_since": "January 2024",
+            },
+            "summary": {
+                "is_sample": False,
+                "period": "This month",
+                "total_spent": "₹0",
+                "transaction_count": 0,
+                "top_category": "",
+            },
+            "transactions": [],
+            "category_breakdown": [],
+        },
+    )
 
 
 def test_login_page_renders():
