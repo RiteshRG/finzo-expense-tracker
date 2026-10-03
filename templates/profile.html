@@ -109,6 +109,7 @@
                                 <th scope="col">Description</th>
                                 <th scope="col">Category</th>
                                 <th scope="col" class="profile-amount-column">Amount</th>
+                                <th scope="col" class="profile-action-column">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -118,10 +119,13 @@
                                 <th scope="row" class="profile-description">{{ transaction.description }}</th>
                                 <td><span class="profile-category-badge {{ transaction.category_class }}">{{ transaction.category }}</span></td>
                                 <td class="profile-amount-column">{{ transaction.amount }}</td>
+                                <td class="profile-action-column">
+                                    <a class="profile-action-link" href="{{ request.url_for('edit_expense', expense_id=transaction.id) }}">Edit</a>
+                                </td>
                             </tr>
                             {% else %}
                             <tr>
-                                <td class="profile-empty-state" colspan="4">No transactions to show yet.</td>
+                                <td class="profile-empty-state" colspan="5">No transactions to show yet.</td>
                             </tr>
                             {% endfor %}
                         </tbody>

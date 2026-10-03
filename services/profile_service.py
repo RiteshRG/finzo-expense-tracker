@@ -251,6 +251,7 @@ def get_profile_context(
         ),
         "transactions": [
             {
+                "id": expense["id"],
                 "date": _format_date(expense["created_at"]),
                 "description": expense["title"],
                 "category": expense["category"] or "General",
