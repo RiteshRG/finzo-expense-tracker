@@ -38,10 +38,11 @@ def test_login_success_sets_session_and_logout_clears_it(monkeypatch):
     )
 
     assert response.status_code == 303
-    assert response.headers["location"] == "/"
+    assert response.headers["location"] == "/profile"
     assert "session=" in response.headers["set-cookie"]
 
-    authenticated_page = client.get("/")
+    authenticated_page = client.get("/profile")
+    assert authenticated_page.status_code == 200
     assert "Sign out" in authenticated_page.text
     assert "Get started" not in authenticated_page.text
 
@@ -78,6 +79,7 @@ def test_authenticated_user_is_redirected_away_from_auth_pages(
         follow_redirects=False,
     )
     assert login_response.status_code == 303
+    assert login_response.headers["location"] == "/profile"
 
     def unexpected_auth_call(*_args, **_kwargs):
         raise AssertionError("Authenticated users should be redirected before auth logic runs.")
@@ -90,10 +92,75 @@ def test_authenticated_user_is_redirected_away_from_auth_pages(
     )
 
     assert response.status_code == 303
-    assert response.headers["location"] == "/"
+    assert response.headers["location"] == "/profile"
 
-    # The redirect must not clear or replace the user's authenticated session.
-    assert "Sign out" in client.get("/").text
+    # Redirects must preserve the user's authenticated session.
+    profile_response = client.get("/profile")
+    assert profile_response.status_code == 200
+    assert "Sign out" in profile_response.text
+
+
+def test_authenticated_landing_page_redirects_to_profile(monkeypatch):
+    monkeypatch.setattr(
+        auth_routes,
+        "authenticate_user",
+        lambda credentials: {"id": 7, "name": "Finzo User"},
+    )
+    client = TestClient(app)
+    client.post(
+        "/login",
+        data={"email": "user@example.com", "password": "password"},
+        follow_redirects=False,
+    )
+
+    response = client.get("/", follow_redirects=False)
+
+    assert response.status_code == 303
+    assert response.headers["location"] == "/profile"
+
+
+def test_authenticated_post_login_redirects_to_profile_without_authenticating_again(
+    monkeypatch,
+):
+    monkeypatch.setattr(
+        auth_routes,
+        "authenticate_user",
+        lambda credentials: {"id": 7, "name": "Finzo User"},
+    )
+    client = TestClient(app)
+    client.post(
+        "/login",
+        data={"email": "user@example.com", "password": "password"},
+        follow_redirects=False,
+    )
+
+    def unexpected_authentication_call(*_args, **_kwargs):
+        raise AssertionError("An authenticated session must redirect before auth.")
+
+    monkeypatch.setattr(auth_routes, "authenticate_user", unexpected_authentication_call)
+    response = client.post(
+        "/login",
+        data={"email": "bad-input", "password": ""},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303
+    assert response.headers["location"] == "/profile"
+
+
+def test_invalid_session_user_id_is_cleared_on_auth_page():
+    from starlette.requests import Request
+
+    request = Request(
+        {
+            "type": "http",
+            "headers": [],
+            "session": {"user_id": True, "unrelated": "value"},
+        }
+    )
+
+    assert auth_routes._redirect_authenticated_user(request) is None
+    assert request.session == {}
 
 
 def test_unknown_email_and_wrong_password_use_same_generic_error(monkeypatch):

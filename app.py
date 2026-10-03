@@ -2,13 +2,16 @@ import os
 
 import uvicorn
 from fastapi import FastAPI, Request
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
 from dotenv import load_dotenv
 from database import init_db, seed_db
+from dependencies.auth import get_session_user_id
 from routes.auth import router as auth_router
+from services.profile_service import get_profile_context
 
 load_dotenv()
 
@@ -45,6 +48,10 @@ def startup_event():
 
 @app.get("/", name="landing")
 def landing(request: Request):
+    if get_session_user_id(request) is not None:
+        return RedirectResponse(url="/profile", status_code=303)
+    if "user_id" in request.session:
+        request.session.clear()
     return templates.TemplateResponse(request=request, name="landing.html", context={})
 
 
@@ -59,13 +66,24 @@ def privacy(request: Request):
 
 
 # ------------------------------------------------------------------ #
-# Placeholder routes — students will implement these                  #
+# Profile and placeholder routes                                      #
 # ------------------------------------------------------------------ #
 
-@app.get("/profile")
-def profile():
-    return "Profile page — coming in Step 4"
+@app.get("/profile", name="profile")
+def profile(request: Request):
+    if get_session_user_id(request) is None:
+        if "user_id" in request.session:
+            request.session.clear()
+        return RedirectResponse(url="/login", status_code=303)
 
+    return templates.TemplateResponse(
+        request=request,
+        name="profile.html",
+        context=get_profile_context(),
+    )
+
+
+# Placeholder expense routes — students will implement these          #
 
 @app.get("/expenses/add")
 def add_expense():

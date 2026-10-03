@@ -19,7 +19,8 @@
                 <span class="brand-name">Finzo</span>
             </a>
             <div class="nav-links">
-                {% if request.session.get('user_id') %}
+                {% if request.session.get('user_id') is integer and request.session.get('user_id') > 0 %}
+                <a href="{{ request.url_for('profile') }}" class="nav-profile-link">Profile</a>
                 <form method="POST" action="{{ request.url_for('logout') }}">
                     <button type="submit" class="nav-cta">Sign out</button>
                 </form>

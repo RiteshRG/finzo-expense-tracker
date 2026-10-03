@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Your profile — Finzo{% endblock %}
+
+{% block content %}
+<section class="profile-page">
+    <div class="profile-inner">
+        <header class="profile-heading">
+            <p class="profile-eyebrow">Your Finzo space</p>
+            <h1 class="profile-title">Your profile</h1>
+            <p class="profile-intro">A snapshot of your account and spending activity.</p>
+        </header>
+
+        {% if summary.is_sample %}
+        <aside class="profile-demo-note" aria-label="Sample data notice">
+            <span class="profile-demo-label">Preview data</span>
+            <p>This profile and spending activity are examples. Your real account activity is not connected to this page yet.</p>
+        </aside>
+        {% endif %}
+
+        <section class="profile-user-card" aria-labelledby="profile-user-name">
+            <div class="profile-avatar" aria-hidden="true">{{ user.initials }}</div>
+            <div class="profile-user-details">
+                <h2 id="profile-user-name">{{ user.name }}</h2>
+                <p class="profile-email">{{ user.email }}</p>
+                <p class="profile-member-since">Member since {{ user.member_since }}</p>
+            </div>
+            <div class="profile-card-mark" aria-hidden="true">◈</div>
+        </section>
+
+        <section class="profile-section" aria-labelledby="profile-summary-heading">
+            <div class="profile-section-heading">
+                <div>
+                    <span class="profile-eyebrow">{{ summary.period }}</span>
+                    <h2 id="profile-summary-heading">Spending overview</h2>
+                </div>
+            </div>
+            <div class="profile-summary-grid">
+                <article class="profile-stat-card profile-stat-primary">
+                    <p class="profile-stat-label">Total spent</p>
+                    <p class="profile-stat-value">{{ summary.total_spent }}</p>
+                    <p class="profile-stat-detail">Across all categories</p>
+                    <span class="profile-stat-icon" aria-hidden="true">₹</span>
+                </article>
+                <article class="profile-stat-card">
+                    <p class="profile-stat-label">Transactions</p>
+                    <p class="profile-stat-value">{{ summary.transaction_count }}</p>
+                    <p class="profile-stat-detail">Recorded this month</p>
+                    <span class="profile-stat-icon" aria-hidden="true">▤</span>
+                </article>
+                <article class="profile-stat-card">
+                    <p class="profile-stat-label">Top category</p>
+                    <p class="profile-stat-value">{{ summary.top_category }}</p>
+                    <p class="profile-stat-detail">Your largest spending area</p>
+                    <span class="profile-stat-icon" aria-hidden="true">↗</span>
+                </article>
+            </div>
+        </section>
+
+        <div class="profile-detail-grid">
+            <section class="profile-section profile-panel" aria-labelledby="profile-transactions-heading">
+                <div class="profile-section-heading">
+                    <div>
+                        <span class="profile-eyebrow">Latest activity</span>
+                        <h2 id="profile-transactions-heading">Recent transactions</h2>
+                    </div>
+                    <span class="profile-section-count">{{ transactions|length }} shown</span>
+                </div>
+                <div class="profile-table-wrap"
+                     tabindex="0"
+                     role="region"
+                     aria-label="Recent transactions table, scroll horizontally to see all columns">
+                    <table class="profile-transactions">
+                        <caption class="visually-hidden">Recent transactions</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Date</th>
+                                <th scope="col">Description</th>
+                                <th scope="col">Category</th>
+                                <th scope="col" class="profile-amount-column">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in transactions %}
+                            <tr>
+                                <td class="profile-date">{{ transaction.date }}</td>
+                                <th scope="row" class="profile-description">{{ transaction.description }}</th>
+                                <td><span class="profile-category-badge {{ transaction.category_class }}">{{ transaction.category }}</span></td>
+                                <td class="profile-amount-column">{{ transaction.amount }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td class="profile-empty-state" colspan="4">No transactions to show yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="profile-section profile-panel" aria-labelledby="profile-categories-heading">
+                <div class="profile-section-heading">
+                    <div>
+                        <span class="profile-eyebrow">Where it goes</span>
+                        <h2 id="profile-categories-heading">Category breakdown</h2>
+                    </div>
+                </div>
+                <ul class="profile-category-list">
+                    {% for category in category_breakdown %}
+                    <li class="profile-category-item">
+                        <div class="profile-category-heading">
+                            <span class="profile-category-badge {{ category.category_class }}">{{ category.name }}</span>
+                            <span class="profile-category-amount">{{ category.amount }}</span>
+                        </div>
+                        <progress class="profile-progress {{ category.category_class }}"
+                                  max="100"
+                                  value="{{ category.share }}"
+                                  aria-label="{{ category.name }}: {{ category.share }} percent of spending">
+                            {{ category.share }}%
+                        </progress>
+                        <span class="profile-category-share">{{ category.share }}% of spending</span>
+                    </li>
+                    {% else %}
+                    <li class="profile-empty-state">No category data to show yet.</li>
+                    {% endfor %}
+                </ul>
+            </section>
+        </div>
+    </div>
+</section>
+{% endblock %}
