@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Add expense — Finzo{% endblock %}
+
+{% block content %}
+<section class="expense-page" aria-labelledby="expense-page-title">
+    <div class="expense-container">
+        <header class="expense-header">
+            <p class="profile-eyebrow">Track a new spend</p>
+            <h1 class="expense-title" id="expense-page-title">Add expense</h1>
+            <p class="expense-subtitle">Capture a one-off purchase, recurring bill, or everyday item.</p>
+        </header>
+
+        <div class="expense-card">
+            {% if error %}
+            <div class="auth-error" role="alert">{{ error }}</div>
+            {% endif %}
+
+            <form method="post" action="{{ request.url_for('add_expense_submit') }}" class="expense-form">
+                <div class="form-group">
+                    <label for="title">Title</label>
+                    <input
+                        id="title"
+                        name="title"
+                        type="text"
+                        value="{{ form.title }}"
+                        class="form-input"
+                        placeholder="Groceries, rent, flights..."
+                        maxlength="255"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label for="amount">Amount</label>
+                    <input
+                        id="amount"
+                        name="amount"
+                        type="number"
+                        step="0.01"
+                        min="0.01"
+                        value="{{ form.amount }}"
+                        class="form-input"
+                        placeholder="0.00"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select id="category" name="category" class="form-input form-select">
+                        {% for category in categories %}
+                        <option value="{{ category }}" {% if form.category == category %}selected{% endif %}>{{ category }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea
+                        id="description"
+                        name="description"
+                        class="form-input form-textarea"
+                        rows="4"
+                        placeholder="Add details about this expense">{{ form.description }}</textarea>
+                </div>
+
+                <div class="expense-actions">
+                    <button type="submit" class="btn-submit">Save expense</button>
+                    <a href="{{ request.url_for('profile') }}" class="btn-ghost expense-cancel">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

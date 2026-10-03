@@ -30,6 +30,8 @@ def profile(
         return RedirectResponse(url="/login", status_code=303)
 
     try:
+        if start_date is not None and end_date is not None and start_date > end_date:
+            raise InvalidProfileDateRangeError
         context = get_profile_context(user_id, start_date, end_date)
     except InvalidProfileDateRangeError:
         return PlainTextResponse(
