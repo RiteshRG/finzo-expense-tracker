@@ -28,6 +28,37 @@
             <div class="profile-card-mark" aria-hidden="true">◈</div>
         </section>
 
+        <section class="profile-date-filter" aria-label="Filter spending by date">
+            <nav class="profile-date-presets" aria-label="Quick date filters">
+                {% for preset in date_presets %}
+                <a class="profile-date-preset{% if preset.is_active %} is-active{% endif %}"
+                   href="{{ request.url_for('profile') }}?start_date={{ preset.start_date }}&amp;end_date={{ preset.end_date }}"
+                   {% if preset.is_active %}aria-current="date"{% endif %}>
+                    {{ preset.label }}
+                </a>
+                {% endfor %}
+            </nav>
+            <form class="profile-date-custom" method="get" action="{{ request.url_for('profile') }}">
+                <div class="profile-date-field">
+                    <label for="profile-start-date">From</label>
+                    <input id="profile-start-date"
+                           name="start_date"
+                           type="date"
+                           value="{{ date_range.start_date }}"
+                           required>
+                </div>
+                <div class="profile-date-field">
+                    <label for="profile-end-date">To</label>
+                    <input id="profile-end-date"
+                           name="end_date"
+                           type="date"
+                           value="{{ date_range.end_date }}"
+                           required>
+                </div>
+                <button class="profile-date-submit" type="submit">Apply dates</button>
+            </form>
+        </section>
+
         <section class="profile-section" aria-labelledby="profile-summary-heading">
             <div class="profile-section-heading">
                 <div>
@@ -45,7 +76,7 @@
                 <article class="profile-stat-card">
                     <p class="profile-stat-label">Transactions</p>
                     <p class="profile-stat-value">{{ summary.transaction_count }}</p>
-                    <p class="profile-stat-detail">Recorded this month</p>
+                    <p class="profile-stat-detail">In selected date range</p>
                     <span class="profile-stat-icon" aria-hidden="true">▤</span>
                 </article>
                 <article class="profile-stat-card">
@@ -61,10 +92,10 @@
             <section class="profile-section profile-panel" aria-labelledby="profile-transactions-heading">
                 <div class="profile-section-heading">
                     <div>
-                        <span class="profile-eyebrow">Latest activity</span>
-                        <h2 id="profile-transactions-heading">Recent transactions</h2>
+                        <span class="profile-eyebrow">Activity: {{ summary.period }}</span>
+                        <h2 id="profile-transactions-heading">Transactions in this range</h2>
                     </div>
-                    <span class="profile-section-count">{{ transactions|length }} shown</span>
+                    <span class="profile-section-count">All {{ transactions|length }} shown</span>
                 </div>
                 <div class="profile-table-wrap"
                      tabindex="0"
