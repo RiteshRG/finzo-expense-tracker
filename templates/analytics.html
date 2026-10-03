@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics — Finzo{% endblock %}
+
+{% block content %}
+<section class="analytics-page" aria-labelledby="analytics-title">
+    <div class="analytics-card">
+        <div class="analytics-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" focusable="false">
+                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M12 7v5l3.25 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <p class="analytics-status">Coming Soon</p>
+        <h1 class="analytics-title" id="analytics-title">Advanced Analytics</h1>
+        <p class="analytics-description">
+            We're working on powerful insights and visualisations to help you understand your spending patterns better.
+        </p>
+        <div class="analytics-dots" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <p class="analytics-note">We're crafting something special</p>
+    </div>
+</section>
+{% endblock %}

@@ -21,6 +21,9 @@
             <div class="nav-links">
                 {% if request.session.get('user_id') is integer and request.session.get('user_id') > 0 %}
                 <a href="{{ request.url_for('profile') }}" class="nav-profile-link">Profile</a>
+                <a href="{{ request.url_for('analytics') }}"
+                   class="nav-analytics-link{% if request.url.path == '/analytics' %} is-active{% endif %}"
+                   {% if request.url.path == '/analytics' %}aria-current="page"{% endif %}>Analytics</a>
                 <form method="POST" action="{{ request.url_for('logout') }}">
                     <button type="submit" class="nav-cta">Sign out</button>
                 </form>

@@ -10,6 +10,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from dotenv import load_dotenv
 from database import init_db, seed_db
 from dependencies.auth import get_session_user_id
+from routes.analytics import router as analytics_router
 from routes.auth import router as auth_router
 from routes.profile import router as profile_router
 
@@ -26,6 +27,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 app.include_router(auth_router)
 app.include_router(profile_router)
+app.include_router(analytics_router)
 app.add_middleware(
     SessionMiddleware,
     secret_key=session_secret,
