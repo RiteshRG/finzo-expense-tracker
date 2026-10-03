@@ -5,7 +5,7 @@ from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import ValidationError
 
-from dependencies.auth import get_current_user_id
+from dependencies.auth import get_current_user_id, get_session_user_id
 from schemas import UserLogin, UserRegistration
 from services.auth_service import (
     AuthenticationUnavailableError,
@@ -20,9 +20,11 @@ logger = logging.getLogger(__name__)
 
 
 def _redirect_authenticated_user(request: Request) -> RedirectResponse | None:
-    user_id = request.session.get("user_id")
-    if isinstance(user_id, int) and user_id > 0:
-        return RedirectResponse(url="/", status_code=303)
+    user_id = get_session_user_id(request)
+    if user_id is not None:
+        return RedirectResponse(url="/profile", status_code=303)
+    if "user_id" in request.session:
+        request.session.clear()
     return None
 
 
@@ -121,7 +123,7 @@ def login_submit(
 
     request.session.clear()
     request.session["user_id"] = user["id"]
-    return RedirectResponse(url="/", status_code=303)
+    return RedirectResponse(url="/profile", status_code=303)
 
 
 @router.post("/logout", name="logout")
