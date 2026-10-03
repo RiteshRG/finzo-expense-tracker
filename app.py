@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 from database import init_db, seed_db
 from dependencies.auth import get_session_user_id
 from routes.auth import router as auth_router
-from services.profile_service import get_profile_context
+from routes.profile import router as profile_router
 
 load_dotenv()
 
@@ -25,6 +25,7 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 app.include_router(auth_router)
+app.include_router(profile_router)
 app.add_middleware(
     SessionMiddleware,
     secret_key=session_secret,
@@ -68,20 +69,6 @@ def privacy(request: Request):
 # ------------------------------------------------------------------ #
 # Profile and placeholder routes                                      #
 # ------------------------------------------------------------------ #
-
-@app.get("/profile", name="profile")
-def profile(request: Request):
-    if get_session_user_id(request) is None:
-        if "user_id" in request.session:
-            request.session.clear()
-        return RedirectResponse(url="/login", status_code=303)
-
-    return templates.TemplateResponse(
-        request=request,
-        name="profile.html",
-        context=get_profile_context(),
-    )
-
 
 # Placeholder expense routes — students will implement these          #
 
