@@ -1068,10 +1068,119 @@ a { color: inherit; text-decoration: none; }
     transition: background 0.2s, border-color 0.2s, color 0.2s;
 }
 
+.profile-action-form {
+    display: inline;
+    margin-left: 0.35rem;
+}
+
+.profile-action-button {
+    background: var(--danger-light);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--danger);
+    cursor: pointer;
+    display: inline-flex;
+    font-family: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.35rem 0.7rem;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
 .profile-action-link:hover {
     background: var(--accent);
     border-color: var(--accent);
     color: var(--paper-card);
+}
+
+.profile-action-button:hover {
+    background: var(--danger);
+    border-color: var(--danger);
+    color: var(--paper-card);
+}
+
+.profile-action-link:focus-visible,
+.profile-action-button:focus-visible {
+    outline: 2px solid var(--accent-2);
+    outline-offset: 2px;
+}
+
+.expense-delete-dialog {
+    background: var(--paper-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 24px 72px rgb(15 15 15 / 24%);
+    color: var(--ink);
+    margin: auto;
+    max-width: 30rem;
+    padding: 0;
+    width: calc(100% - 2rem);
+}
+
+.expense-delete-dialog::backdrop {
+    background: rgb(15 15 15 / 48%);
+    backdrop-filter: blur(3px);
+}
+
+.expense-delete-dialog-content {
+    padding: clamp(1.5rem, 5vw, 2rem);
+}
+
+.expense-delete-dialog h2 {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 5vw, 1.9rem);
+    font-weight: 400;
+    line-height: 1.2;
+    margin-top: 0.4rem;
+}
+
+.expense-delete-dialog-content > p:not(.profile-eyebrow) {
+    color: var(--ink-muted);
+    margin-top: 0.65rem;
+}
+
+.expense-delete-dialog-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    margin-top: 1.75rem;
+}
+
+.expense-delete-cancel,
+.expense-delete-confirm {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font: 600 0.875rem var(--font-body);
+    min-height: 2.75rem;
+    padding: 0.6rem 1rem;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.expense-delete-cancel {
+    background: var(--paper-card);
+    color: var(--ink-soft);
+}
+
+.expense-delete-cancel:hover {
+    background: var(--paper-warm);
+}
+
+.expense-delete-confirm {
+    background: var(--danger);
+    border-color: var(--danger);
+    color: var(--paper-card);
+}
+
+.expense-delete-confirm:hover {
+    background: var(--ink-soft);
+    border-color: var(--ink-soft);
+}
+
+.expense-delete-cancel:focus-visible,
+.expense-delete-confirm:focus-visible {
+    outline: 2px solid var(--accent-2);
+    outline-offset: 2px;
 }
 
 .profile-date { white-space: nowrap; }

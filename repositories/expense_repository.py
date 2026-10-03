@@ -106,6 +106,19 @@ def update_expense(
     return get_expense_for_user(expense_id, user_id)
 
 
+def delete_expense(expense_id: int, user_id: int) -> bool:
+    deleted_rows = execute_query(
+        """
+        DELETE FROM expenses
+        WHERE id = %s AND user_id = %s
+        """,
+        (expense_id, user_id),
+        fetch=False,
+        return_rowcount=True,
+    )
+    return deleted_rows == 1
+
+
 __all__ = [
     "get_recent_transactions",
     "get_category_totals_for_range",
@@ -113,4 +126,5 @@ __all__ = [
     "get_expense_for_user",
     "create_expense",
     "update_expense",
+    "delete_expense",
 ]

@@ -1,5 +1,7 @@
+import logging
+
 from fastapi import APIRouter, Form, Request
-from fastapi.responses import RedirectResponse
+from fastapi.responses import PlainTextResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import ValidationError
 
@@ -8,13 +10,16 @@ from repositories.expense_repository import get_expense_for_user
 from schemas import ExpenseCreate, ExpenseUpdate
 from services.expense_service import (
     ExpenseCreationError,
+    ExpenseDeletionError,
     ExpenseUpdateError,
     create_expense,
+    delete_expense,
     update_expense,
 )
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
+logger = logging.getLogger(__name__)
 
 COMMON_CATEGORIES = [
     "Food",
@@ -193,10 +198,31 @@ def edit_expense_submit(
     return RedirectResponse(url="/profile", status_code=303)
 
 
+@router.post("/expenses/{expense_id}/delete", name="delete_expense")
+def delete_expense_submit(request: Request, expense_id: int):
+    user_id = get_session_user_id(request)
+    if user_id is None:
+        if "user_id" in request.session:
+            request.session.clear()
+        return RedirectResponse(url="/login", status_code=303)
+
+    try:
+        delete_expense(user_id, expense_id)
+    except ExpenseDeletionError:
+        logger.exception("Expense deletion could not be completed.")
+        return PlainTextResponse(
+            "This expense could not be deleted right now. Please try again later.",
+            status_code=503,
+        )
+
+    return RedirectResponse(url="/profile", status_code=303)
+
+
 __all__ = [
     "router",
     "add_expense_page",
     "add_expense_submit",
     "edit_expense_page",
     "edit_expense_submit",
+    "delete_expense_submit",
 ]

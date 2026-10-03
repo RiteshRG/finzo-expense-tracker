@@ -60,7 +60,12 @@ def get_db():
         connection.close()
 
 
-def execute_query(query: str, params=None, fetch: bool = False):
+def execute_query(
+    query: str,
+    params=None,
+    fetch: bool = False,
+    return_rowcount: bool = False,
+):
     connection = get_connection()
     try:
         with connection.cursor() as cursor:
@@ -68,6 +73,8 @@ def execute_query(query: str, params=None, fetch: bool = False):
             if fetch:
                 return cursor.fetchall()
             connection.commit()
+            if return_rowcount:
+                return cursor.rowcount
             return cursor.lastrowid
     except Exception:
         connection.rollback()
