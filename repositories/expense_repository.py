@@ -54,6 +54,20 @@ def get_expense_by_id(expense_id: int) -> dict[str, Any] | None:
     return rows[0] if rows else None
 
 
+def get_expense_for_user(expense_id: int, user_id: int) -> dict[str, Any] | None:
+    rows = execute_query(
+        """
+        SELECT id, user_id, title, amount, category, description, created_at, updated_at
+        FROM expenses
+        WHERE id = %s AND user_id = %s
+        LIMIT 1
+        """,
+        (expense_id, user_id),
+        fetch=True,
+    )
+    return rows[0] if rows else None
+
+
 def create_expense(
     user_id: int,
     title: str,
@@ -72,9 +86,31 @@ def create_expense(
     return get_expense_by_id(row_id)
 
 
+def update_expense(
+    expense_id: int,
+    user_id: int,
+    title: str,
+    amount: float | str,
+    category: str,
+    description: str | None = None,
+) -> dict[str, Any] | None:
+    execute_query(
+        """
+        UPDATE expenses
+        SET title = %s, amount = %s, category = %s, description = %s, updated_at = CURRENT_TIMESTAMP
+        WHERE id = %s AND user_id = %s
+        """,
+        (title, amount, category, description, expense_id, user_id),
+        fetch=False,
+    )
+    return get_expense_for_user(expense_id, user_id)
+
+
 __all__ = [
     "get_recent_transactions",
     "get_category_totals_for_range",
     "get_expense_by_id",
+    "get_expense_for_user",
     "create_expense",
+    "update_expense",
 ]

@@ -87,4 +87,42 @@ class ExpenseCreate(BaseModel):
         return cleaned or None
 
 
-__all__ = ["UserRegistration", "UserLogin", "ExpenseCreate"]
+class ExpenseUpdate(BaseModel):
+    title: str
+    amount: Decimal
+    category: str | None = None
+    description: str | None = None
+
+    @field_validator("title")
+    @classmethod
+    def validate_title(cls, value: str) -> str:
+        cleaned = (value or "").strip()
+        if not cleaned:
+            raise ValueError("Title is required.")
+        return cleaned
+
+    @field_validator("amount")
+    @classmethod
+    def validate_amount(cls, value: Decimal) -> Decimal:
+        if value <= 0:
+            raise ValueError("Amount must be greater than zero.")
+        return value.quantize(Decimal("0.01"))
+
+    @field_validator("category")
+    @classmethod
+    def validate_category(cls, value: str | None) -> str | None:
+        if value is None:
+            return "General"
+        cleaned = value.strip()
+        return cleaned or "General"
+
+    @field_validator("description")
+    @classmethod
+    def validate_description(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        cleaned = value.strip()
+        return cleaned or None
+
+
+__all__ = ["UserRegistration", "UserLogin", "ExpenseCreate", "ExpenseUpdate"]
