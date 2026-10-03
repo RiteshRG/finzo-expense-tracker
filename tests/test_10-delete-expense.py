@@ -72,7 +72,7 @@ def test_get_request_is_not_allowed_for_delete_route(monkeypatch):
     assert response.status_code == 405
 
 
-def test_successful_delete_expense_redirects_and_passes_authenticated_user_ids(monkeypatch):
+def test_successful_delete_expense_uses_authenticated_user_id_not_form_data(monkeypatch):
     observed = []
 
     def fake_delete(user_id, expense_id):
@@ -84,6 +84,7 @@ def test_successful_delete_expense_redirects_and_passes_authenticated_user_ids(m
 
     response = client.post(
         "/expenses/99/delete",
+        data={"user_id": "12345"},
         follow_redirects=False,
     )
 
@@ -105,7 +106,7 @@ def test_missing_or_other_user_delete_redirects_without_disclosing_details(monke
     assert response.headers["location"] == "/profile"
 
 
-def test_delete_expense_failure_returns_generic_503(monkeypatch):
+def test_delete_expense_failure_is_logged_and_returns_generic_503(monkeypatch, caplog):
     def fake_delete(user_id, expense_id):
         raise expense_service.ExpenseDeletionError("database unavailable")
 
@@ -119,47 +120,50 @@ def test_delete_expense_failure_returns_generic_503(monkeypatch):
 
     assert response.status_code == 503
     assert response.text == "This expense could not be deleted right now. Please try again later."
+    assert "database unavailable" not in response.text
+    assert "Expense deletion could not be completed." in caplog.text
 
 
 def test_profile_page_renders_confirmed_delete_form_for_each_transaction(monkeypatch):
     client = _authenticated_client(monkeypatch)
+    context = {
+        "summary": {
+            "is_sample": False,
+            "period": "Last 30 days",
+            "total_spent": "₹1,234.00",
+            "transaction_count": 1,
+            "top_category": "Food",
+        },
+        "user": {
+            "initials": "FU",
+            "name": "Finzo User",
+            "email": "user@example.com",
+            "member_since": "2024-01-01",
+        },
+        "date_presets": [
+            {
+                "is_active": True,
+                "label": "This month",
+                "start_date": "2024-01-01",
+                "end_date": "2024-01-31",
+            }
+        ],
+        "date_range": {"start_date": "2024-01-01", "end_date": "2024-01-31"},
+        "transactions": [
+            {
+                "id": 99,
+                "date": "2024-01-08",
+                "description": "Groceries",
+                "category": "Food",
+                "amount": "₹500.00",
+                "category_class": "food",
+            }
+        ],
+    }
     monkeypatch.setattr(
         profile_routes,
         "get_profile_context",
-        lambda user_id, start_date=None, end_date=None: {
-            "summary": {
-                "is_sample": False,
-                "period": "Last 30 days",
-                "total_spent": "₹1,234.00",
-                "transaction_count": 1,
-                "top_category": "Food",
-            },
-            "user": {
-                "initials": "FU",
-                "name": "Finzo User",
-                "email": "user@example.com",
-                "member_since": "2024-01-01",
-            },
-            "date_presets": [
-                {
-                    "is_active": True,
-                    "label": "This month",
-                    "start_date": "2024-01-01",
-                    "end_date": "2024-01-31",
-                }
-            ],
-            "date_range": {"start_date": "2024-01-01", "end_date": "2024-01-31"},
-            "transactions": [
-                {
-                    "id": 99,
-                    "date": "2024-01-08",
-                    "description": "Groceries",
-                    "category": "Food",
-                    "amount": "₹500.00",
-                    "category_class": "food",
-                }
-            ],
-        },
+        lambda user_id, start_date=None, end_date=None: context,
     )
 
     response = client.get("/profile")
@@ -177,6 +181,13 @@ def test_profile_page_renders_confirmed_delete_form_for_each_transaction(monkeyp
     assert "/static/js/main.js?v=delete-dialog-20261004" in response.text
     assert 'type="submit">Delete' not in response.text
     assert 'Delete' in response.text
+
+    context["transactions"] = []
+    empty_response = client.get("/profile")
+
+    assert empty_response.status_code == 200
+    assert "No transactions to show yet." in empty_response.text
+    assert "data-delete-expense-form" not in empty_response.text
 
 
 def test_expense_repository_delete_uses_parameterized_user_scoped_sql(monkeypatch):
