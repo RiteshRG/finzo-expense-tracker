@@ -1,8 +1,11 @@
 from decimal import Decimal
 from typing import Any
 
+import pymysql
+
 from repositories.expense_repository import (
     create_expense as create_expense_record,
+    delete_expense as delete_expense_record,
     update_expense as update_expense_record,
 )
 from schemas import ExpenseCreate, ExpenseUpdate
@@ -14,6 +17,10 @@ class ExpenseCreationError(ValueError):
 
 class ExpenseUpdateError(ValueError):
     """Raised when an expense update payload is invalid or cannot be saved."""
+
+
+class ExpenseDeletionError(RuntimeError):
+    """Raised when an expense deletion cannot be completed."""
 
 
 def create_expense(user_id: int, payload: ExpenseCreate) -> dict[str, Any]:
@@ -65,4 +72,18 @@ def update_expense(user_id: int, expense_id: int, payload: ExpenseUpdate) -> dic
     return expense
 
 
-__all__ = ["create_expense", "update_expense", "ExpenseCreationError", "ExpenseUpdateError"]
+def delete_expense(user_id: int, expense_id: int) -> bool:
+    try:
+        return delete_expense_record(expense_id=expense_id, user_id=user_id)
+    except (pymysql.MySQLError, OSError, RuntimeError) as exc:
+        raise ExpenseDeletionError("Expense deletion failed.") from exc
+
+
+__all__ = [
+    "create_expense",
+    "update_expense",
+    "delete_expense",
+    "ExpenseCreationError",
+    "ExpenseUpdateError",
+    "ExpenseDeletionError",
+]
