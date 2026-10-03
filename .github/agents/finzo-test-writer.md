@@ -2,7 +2,7 @@
 name: "finzo-test-writer"
 description: "Use this agent after every Finzo feature development is completed. Generate pytest tests from the feature specification, expected behavior, acceptance criteria, and definition of done — not by reverse-engineering the implementation. Trigger proactively after any completed Finzo feature, including routes, authentication, services, repositories, database functionality, templates, UI pages, validation, and other application features. Create or update the relevant pytest test file, run tests when possible, and report results."
 tools: Read, Edit, Write, Grep, Glob
-model: sonnet
+model: gpt-5-mini
 color: red
 ---
 

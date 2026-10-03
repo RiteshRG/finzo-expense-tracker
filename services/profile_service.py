@@ -4,7 +4,7 @@ import re
 from typing import Any
 
 from repositories.expense_repository import (
-    get_monthly_category_totals,
+    get_category_totals_for_range,
     get_recent_transactions,
 )
 from repositories.user_repository import get_user_by_id
@@ -12,6 +12,10 @@ from repositories.user_repository import get_user_by_id
 
 class ProfileDataUnavailableError(Exception):
     """Raised when profile data cannot be loaded from the database."""
+
+
+class InvalidProfileDateRangeError(ValueError):
+    """Raised when the requested profile date range is reversed."""
 
 
 def _format_indian_grouping(value: int) -> str:
@@ -77,6 +81,57 @@ def _current_month_bounds(now: datetime | None = None) -> tuple[datetime, dateti
     return start, end
 
 
+def _resolve_date_range(
+    start_date: date | None,
+    end_date: date | None,
+    now: datetime | None = None,
+) -> tuple[date, date, datetime, datetime]:
+    month_start, month_end_exclusive = _current_month_bounds(now)
+    effective_start = start_date or month_start.date()
+    effective_end = end_date or (month_end_exclusive.date() - date.resolution)
+    if effective_start > effective_end:
+        raise InvalidProfileDateRangeError
+
+    start = datetime(
+        effective_start.year, effective_start.month, effective_start.day
+    )
+    end_exclusive = datetime(
+        effective_end.year, effective_end.month, effective_end.day
+    ) + date.resolution
+    return effective_start, effective_end, start, end_exclusive
+
+
+def _build_date_presets(
+    effective_start: date, effective_end: date, now: datetime | None = None
+) -> list[dict[str, Any]]:
+    month_start, month_end_exclusive = _current_month_bounds(now)
+    current_month_index = month_start.year * 12 + month_start.month - 1
+    current_month_end = month_end_exclusive.date() - date.resolution
+    presets: list[dict[str, Any]] = []
+
+    for month_count, label in (
+        (1, "This month"),
+        (3, "Last 3 months"),
+        (6, "Last 6 months"),
+    ):
+        start_month_index = current_month_index - month_count + 1
+        start_year, start_month_index = divmod(start_month_index, 12)
+        preset_start = date(start_year, start_month_index + 1, 1)
+        presets.append(
+            {
+                "label": label,
+                "start_date": preset_start.isoformat(),
+                "end_date": current_month_end.isoformat(),
+                "is_active": (
+                    effective_start == preset_start
+                    and effective_end == current_month_end
+                ),
+            }
+        )
+
+    return presets
+
+
 def _decimal(value: Decimal | int | float | str | None) -> Decimal:
     return Decimal(str(value or 0))
 
@@ -122,9 +177,15 @@ def _build_category_breakdown(
 
 
 def get_profile_context(
-    user_id: int, now: datetime | None = None
+    user_id: int,
+    start_date: date | None = None,
+    end_date: date | None = None,
+    now: datetime | None = None,
 ) -> dict[str, Any] | None:
     """Build the display-ready profile context; return None for a deleted user."""
+    effective_start, effective_end, start, end_exclusive = _resolve_date_range(
+        start_date, end_date, now
+    )
     try:
         user = get_user_by_id(user_id)
     except Exception as exc:
@@ -132,11 +193,10 @@ def get_profile_context(
     if user is None:
         return None
 
-    month_start, next_month_start = _current_month_bounds(now)
     try:
-        recent_expenses = get_recent_transactions(user_id)
-        monthly_category_totals = get_monthly_category_totals(
-            user_id, month_start, next_month_start
+        recent_expenses = get_recent_transactions(user_id, start, end_exclusive)
+        category_totals = get_category_totals_for_range(
+            user_id, start, end_exclusive
         )
     except Exception as exc:
         raise ProfileDataUnavailableError from exc
@@ -149,7 +209,7 @@ def get_profile_context(
             "name": category["name"] or "General",
             "amount": _decimal(category["amount"]),
         }
-        for category in monthly_category_totals
+        for category in category_totals
     ]
     total_spent = sum(
         (category["amount"] for category in categories),
@@ -157,7 +217,7 @@ def get_profile_context(
     )
     transaction_count = sum(
         int(category["transaction_count"])
-        for category in monthly_category_totals
+        for category in category_totals
     )
     categories.sort(
         key=lambda item: (-item["amount"], item["name"].casefold())
@@ -174,11 +234,21 @@ def get_profile_context(
         },
         "summary": {
             "is_sample": False,
-            "period": "This month",
+            "period": (
+                f"{_format_date(effective_start)} to "
+                f"{_format_date(effective_end)}"
+            ),
             "total_spent": _format_currency(total_spent),
             "transaction_count": transaction_count,
             "top_category": top_category,
         },
+        "date_range": {
+            "start_date": effective_start.isoformat(),
+            "end_date": effective_end.isoformat(),
+        },
+        "date_presets": _build_date_presets(
+            effective_start, effective_end, now
+        ),
         "transactions": [
             {
                 "date": _format_date(expense["created_at"]),
@@ -198,7 +268,10 @@ def get_profile_context(
 __all__ = [
     "get_profile_context",
     "ProfileDataUnavailableError",
+    "InvalidProfileDateRangeError",
     "_current_month_bounds",
+    "_resolve_date_range",
+    "_build_date_presets",
     "_format_currency",
     "_format_date",
     "_category_class",

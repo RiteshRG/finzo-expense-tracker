@@ -22,7 +22,7 @@ def mock_profile_context(monkeypatch):
     monkeypatch.setattr(
         profile_routes,
         "get_profile_context",
-        lambda user_id: {
+        lambda user_id, *_args, **_kwargs: {
             "user": {
                 "id": user_id,
                 "name": "Finzo User",
@@ -36,6 +36,10 @@ def mock_profile_context(monkeypatch):
                 "total_spent": "₹0",
                 "transaction_count": 0,
                 "top_category": "",
+            },
+            "date_range": {
+                "start_date": "2026-10-01",
+                "end_date": "2026-10-31",
             },
             "transactions": [],
             "category_breakdown": [],

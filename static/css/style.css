@@ -728,6 +728,100 @@ a { color: inherit; text-decoration: none; }
 
 .profile-member-since { margin-top: 0.25rem; }
 
+.profile-date-filter {
+    background: var(--paper-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    margin-bottom: 2rem;
+    padding: 1.25rem;
+}
+
+.profile-date-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.profile-date-preset {
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--ink-soft);
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.4rem 0.85rem;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.profile-date-preset:hover {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--ink);
+}
+
+.profile-date-preset.is-active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--paper-card);
+}
+
+.profile-date-preset:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.profile-date-custom {
+    align-items: end;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.profile-date-field {
+    display: flex;
+    flex: 1 1 12rem;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-width: 0;
+}
+
+.profile-date-field label {
+    color: var(--ink-soft);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.profile-date-field input {
+    background: var(--paper-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--ink);
+    font: inherit;
+    min-height: 2.75rem;
+    padding: 0.55rem 0.7rem;
+    width: 100%;
+}
+
+.profile-date-field input:focus-visible,
+.profile-date-submit:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.profile-date-submit {
+    background: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius-sm);
+    color: var(--paper-card);
+    cursor: pointer;
+    font: inherit;
+    font-weight: 600;
+    min-height: 2.75rem;
+    padding: 0.55rem 1rem;
+}
+
+.profile-date-submit:hover { background: var(--ink); }
+
 .profile-card-mark {
     color: var(--accent);
     font-size: 4rem;
@@ -982,4 +1076,6 @@ a { color: inherit; text-decoration: none; }
     .profile-avatar { flex-basis: 3.25rem; height: 3.25rem; width: 3.25rem; }
     .profile-card-mark { font-size: 3rem; }
     .profile-panel { padding: 1rem; }
+    .profile-date-custom { align-items: stretch; flex-direction: column; }
+    .profile-date-field { flex-basis: auto; }
 }

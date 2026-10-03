@@ -4,21 +4,24 @@ from typing import Any
 from database import execute_query
 
 
-def get_recent_transactions(user_id: int) -> list[dict[str, Any]]:
+def get_recent_transactions(
+    user_id: int, start: datetime, end: datetime
+) -> list[dict[str, Any]]:
     return execute_query(
         """
         SELECT id, title, amount, category, created_at
         FROM expenses
         WHERE user_id = %s
+          AND created_at >= %s
+          AND created_at < %s
         ORDER BY created_at DESC, id DESC
-        LIMIT 5
         """,
-        (user_id,),
+        (user_id, start, end),
         fetch=True,
     )
 
 
-def get_monthly_category_totals(
+def get_category_totals_for_range(
     user_id: int, start: datetime, end: datetime
 ) -> list[dict[str, Any]]:
     rows = execute_query(
@@ -39,5 +42,5 @@ def get_monthly_category_totals(
 
 __all__ = [
     "get_recent_transactions",
-    "get_monthly_category_totals",
+    "get_category_totals_for_range",
 ]

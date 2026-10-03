@@ -2,7 +2,7 @@
 name: "finzo-test-runner"
 description: "Use this agent after the Finzo test-writer agent has completed and pytest test files exist. This agent executes the generated tests, analyzes the results, and provides actionable diagnostics. It must NEVER be invoked before test files exist."
 tools: Read, Bash, Grep
-model: sonnet
+model: gpt-5-mini
 color: green
 ---
 
