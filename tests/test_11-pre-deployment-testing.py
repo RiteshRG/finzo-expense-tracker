@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock
 
 os.environ.setdefault("DATABASE_URL", "mysql+pymysql://user:password@127.0.0.1:3306/finzo_test")
 os.environ.setdefault(
@@ -45,7 +45,9 @@ def test_health_returns_generic_unavailable_response_when_database_fails(
 
 def test_database_health_check_runs_query_and_closes_connection(monkeypatch):
     connection = Mock()
-    cursor = connection.cursor.return_value.__enter__.return_value
+    cursor = MagicMock()
+    cursor.__enter__.return_value = cursor
+    connection.cursor.return_value = cursor
     connect = Mock(return_value=connection)
     monkeypatch.setattr(database_module.pymysql, "connect", connect)
     monkeypatch.setenv(
@@ -65,7 +67,9 @@ def test_database_health_check_runs_query_and_closes_connection(monkeypatch):
 
 def test_database_health_check_closes_connection_when_query_fails(monkeypatch):
     connection = Mock()
-    cursor = connection.cursor.return_value.__enter__.return_value
+    cursor = MagicMock()
+    cursor.__enter__.return_value = cursor
+    connection.cursor.return_value = cursor
     cursor.execute.side_effect = RuntimeError("query failed")
     monkeypatch.setattr(
         database_module.pymysql,
@@ -183,7 +187,7 @@ def test_docker_image_uses_runtime_port_non_root_user_and_safe_build_context():
     assert "USER finzo" in dockerfile
     assert "PORT=8000" in dockerfile
     assert "--host 0.0.0.0" in dockerfile
-    assert "--port ${PORT:-8000}" in dockerfile
+    assert r'--port \"${PORT:-8000}\"' in dockerfile
     assert "HEALTHCHECK" in dockerfile
     assert "COPY . " not in dockerfile
     assert ".env" in dockerignore

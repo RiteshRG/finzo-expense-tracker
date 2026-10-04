@@ -125,6 +125,8 @@
                                           method="post"
                                           action="{{ request.url_for('delete_expense', expense_id=transaction.id) }}"
                                           data-delete-expense-form>
+                                        <input type="hidden" name="start_date" value="{{ date_range.start_date }}">
+                                        <input type="hidden" name="end_date" value="{{ date_range.end_date }}">
                                         <button class="profile-action-button"
                                                 type="button"
                                                 data-delete-trigger

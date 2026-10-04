@@ -8,5 +8,5 @@ __pycache__/
 *.pyo
 
 .env
-
+.env.docker
 .DS_Store

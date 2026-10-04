@@ -1,4 +1,6 @@
 import logging
+from datetime import date
+from urllib.parse import urlencode
 
 from fastapi import APIRouter, Form, Request
 from fastapi.responses import PlainTextResponse, RedirectResponse
@@ -199,7 +201,12 @@ def edit_expense_submit(
 
 
 @router.post("/expenses/{expense_id}/delete", name="delete_expense")
-def delete_expense_submit(request: Request, expense_id: int):
+def delete_expense_submit(
+    request: Request,
+    expense_id: int,
+    start_date: date | None = Form(None),
+    end_date: date | None = Form(None),
+):
     user_id = get_session_user_id(request)
     if user_id is None:
         if "user_id" in request.session:
@@ -215,7 +222,15 @@ def delete_expense_submit(request: Request, expense_id: int):
             status_code=503,
         )
 
-    return RedirectResponse(url="/profile", status_code=303)
+    profile_url = request.url_for("profile").path
+    query_params = {}
+    if start_date is not None:
+        query_params["start_date"] = start_date.isoformat()
+    if end_date is not None:
+        query_params["end_date"] = end_date.isoformat()
+    if query_params:
+        profile_url = f"{profile_url}?{urlencode(query_params)}"
+    return RedirectResponse(url=profile_url, status_code=303)
 
 
 __all__ = [

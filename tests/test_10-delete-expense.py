@@ -93,6 +93,29 @@ def test_successful_delete_expense_uses_authenticated_user_id_not_form_data(monk
     assert observed == [(7, 99)]
 
 
+def test_successful_delete_preserves_selected_date_range(monkeypatch):
+    monkeypatch.setattr(
+        expense_routes,
+        "delete_expense",
+        lambda user_id, expense_id: True,
+    )
+    client = _authenticated_client(monkeypatch)
+
+    response = client.post(
+        "/expenses/99/delete",
+        data={
+            "start_date": "2024-02-01",
+            "end_date": "2024-02-29",
+        },
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303
+    assert response.headers["location"] == (
+        "/profile?start_date=2024-02-01&end_date=2024-02-29"
+    )
+
+
 def test_missing_or_other_user_delete_redirects_without_disclosing_details(monkeypatch):
     monkeypatch.setattr(expense_routes, "delete_expense", lambda user_id, expense_id: False)
     client = _authenticated_client(monkeypatch)
@@ -166,7 +189,9 @@ def test_profile_page_renders_confirmed_delete_form_for_each_transaction(monkeyp
         lambda user_id, start_date=None, end_date=None: context,
     )
 
-    response = client.get("/profile")
+    response = client.get(
+        "/profile?start_date=2024-01-01&end_date=2024-01-31"
+    )
 
     assert response.status_code == 200
     assert 'action="http://testserver/expenses/99/delete"' in response.text
@@ -174,6 +199,8 @@ def test_profile_page_renders_confirmed_delete_form_for_each_transaction(monkeyp
     assert 'type="button"' in response.text
     assert "data-delete-trigger" in response.text
     assert "data-delete-expense-form" in response.text
+    assert 'type="hidden" name="start_date" value="2024-01-01"' in response.text
+    assert 'type="hidden" name="end_date" value="2024-01-31"' in response.text
     assert '<dialog class="expense-delete-dialog"' in response.text
     assert "Are you sure you want to delete this expense?" in response.text
     assert "data-delete-cancel" in response.text
