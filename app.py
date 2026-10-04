@@ -1,14 +1,21 @@
+import logging
 import os
 
 import uvicorn
 from fastapi import FastAPI, Request
-from fastapi.responses import RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
 from dotenv import load_dotenv
-from database import init_db, seed_db
+
+from database import (
+    check_database_connection,
+    init_db,
+    seed_db,
+    validate_database_config,
+)
 from dependencies.auth import get_session_user_id
 from routes.analytics import router as analytics_router
 from routes.auth import router as auth_router
@@ -17,12 +24,19 @@ from routes.profile import router as profile_router
 
 load_dotenv()
 
-session_secret = os.getenv("SESSION_SECRET_KEY")
-if not session_secret or len(session_secret) < 32:
-    raise RuntimeError(
-        "SESSION_SECRET_KEY must be set to a secret of at least 32 characters."
-    )
+logger = logging.getLogger(__name__)
 
+
+def _get_session_secret() -> str:
+    session_secret = os.getenv("SESSION_SECRET_KEY")
+    if not session_secret or len(session_secret) < 32:
+        raise RuntimeError(
+            "SESSION_SECRET_KEY must be set to a secret of at least 32 characters."
+        )
+    return session_secret
+
+
+session_secret = _get_session_secret()
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
@@ -39,17 +53,41 @@ app.add_middleware(
 
 
 @app.on_event("startup")
-def startup_event():
+def startup_event() -> None:
     try:
-        init_db()
-        seed_db()
+        validate_database_config()
+        if os.getenv("APP_ENV", "production").strip().lower() in {
+            "development",
+            "test",
+        }:
+            init_db()
+            if os.getenv("SEED_DEMO_DATA", "").strip().lower() in {
+                "1",
+                "true",
+                "yes",
+            }:
+                seed_db()
     except Exception:
-        pass
+        logger.exception("Application startup checks failed.")
+        raise
 
 
 # ------------------------------------------------------------------ #
 # Routes                                                              #
 # ------------------------------------------------------------------ #
+
+@app.get("/health", name="health")
+def health() -> JSONResponse:
+    try:
+        check_database_connection()
+    except Exception:
+        logger.exception("Application health check failed.")
+        return JSONResponse(
+            status_code=503,
+            content={"status": "unavailable"},
+        )
+    return JSONResponse(content={"status": "ok"})
+
 
 @app.get("/", name="landing")
 def landing(request: Request):

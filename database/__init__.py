@@ -1,24 +1,45 @@
 import os
-from urllib.parse import urlparse
+from urllib.parse import ParseResult, urlparse
 
 import pymysql
 
 from .models import EXPENSE_TABLE_SQL, USER_TABLE_SQL
 from dotenv import load_dotenv
 
-load_dotenv(override=True)
+load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL")
-if not DATABASE_URL:
-    raise RuntimeError(
-        "DATABASE_URL is not set. Add a MySQL connection URL to your .env file."
-    )
+
+
+def _get_database_url() -> str:
+    database_url = os.getenv("DATABASE_URL")
+    if not database_url:
+        raise RuntimeError("DATABASE_URL must be set to a MySQL connection URL.")
+    return database_url
+
+
+def _parse_database_url() -> ParseResult:
+    try:
+        parsed = urlparse(_get_database_url())
+    except ValueError as exc:
+        raise RuntimeError("DATABASE_URL is not a valid MySQL connection URL.") from exc
+    if parsed.scheme not in {"mysql", "mysql+pymysql"}:
+        raise RuntimeError("DATABASE_URL must use a MySQL PyMySQL URL.")
+    if not parsed.hostname or not parsed.path.lstrip("/"):
+        raise RuntimeError("DATABASE_URL must include a MySQL host and database name.")
+    try:
+        parsed.port
+    except ValueError as exc:
+        raise RuntimeError("DATABASE_URL must contain a valid MySQL port.") from exc
+    return parsed
+
+
+def validate_database_config() -> None:
+    _parse_database_url()
 
 
 def _get_connection_config(include_database: bool = True):
-    parsed = urlparse(DATABASE_URL)
-    if parsed.scheme not in {"mysql", "mysql+pymysql"}:
-        raise RuntimeError("DATABASE_URL must use a MySQL PyMySQL URL.")
+    parsed = _parse_database_url()
 
     config = {
         "host": parsed.hostname or "localhost",
@@ -37,7 +58,7 @@ def _get_connection_config(include_database: bool = True):
 
 def get_connection():
     config = _get_connection_config(include_database=False)
-    database_name = urlparse(DATABASE_URL).path.lstrip("/") or ""
+    database_name = _parse_database_url().path.lstrip("/")
 
     connection = pymysql.connect(**config)
     if database_name:
@@ -50,6 +71,15 @@ def get_connection():
     with connection.cursor() as cursor:
         cursor.execute("SET time_zone = '+00:00'")
     return connection
+
+
+def check_database_connection() -> None:
+    connection = pymysql.connect(**_get_connection_config())
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+    finally:
+        connection.close()
 
 
 def get_db():
@@ -163,9 +193,11 @@ def seed_db():
 
 __all__ = [
     "DATABASE_URL",
+    "check_database_connection",
     "get_connection",
     "get_db",
     "execute_query",
     "init_db",
     "seed_db",
+    "validate_database_config",
 ]
