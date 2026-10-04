@@ -241,9 +241,16 @@ For the criterion “at least one test written before implementation”: **[TODO
 
 ### 3.3 What Worked / What Did Not
 
-The repository contains detailed specifications and prompt instructions, but no versioned prompt/output transcript or unambiguous commit evidence recording a specific AI-generated error and its correction. The observed pytest failures establish current test failures, not that an AI generated the faulty output.
+#### Example: Improving the Finzo landing-page hero with visual context
 
-**[TODO — NEED USER INPUT: provide a documented AI-generated error/correction example, including the initial output, correction prompt, final result, and evidence.]**
+The following prompt and first-output description are reconstructed from the developer's account; the exact original prompt, generated response, and reference image were not saved in the repository.
+
+1. **Original prompt (reconstructed):** “Create a hero section for the Finzo expense-tracking website.”
+2. **Poor output (recalled, not a verbatim transcript):** The first hero was described as mostly text and generic, without a strong visual layout or a clear indication of what the product looked like. The text-only prompt did not give the model a concrete visual target.
+3. **Why it was poor:** The prompt specified the subject but not the composition, visual hierarchy, or relationship to Finzo's existing site. With no screenshot or mockup to follow, the generated design could be generic and visually disconnected from the rest of the website.
+4. **Improved prompt (reconstructed):** “Use the attached reference image as the visual guide for the Finzo landing-page hero. Recreate its overall composition and hierarchy: a clear headline, short supporting copy, a prominent account-creation action, and a product/spending visual. Adapt the design to this repository rather than copying it blindly. Before changing code, inspect the existing landing page, shared `base.html`, and styles. Follow `.github/skills/frontend-design/SKILL.md`: preserve the existing site-wide theme, typography, shared navigation/footer, and CSS conventions; use the existing design tokens where applicable; keep the hero responsive; and avoid introducing another UI framework or unrelated changes. Implement the result in the existing Jinja template and landing stylesheet.”
+5. **Final result:** The current landing page places the headline, supporting copy, and account-creation action alongside a spending-chart illustration, then presents monthly spending, remaining budget, transaction count, and category summaries. It extends the shared base template and has page-specific responsive styles. The frontend-design skill provides the project-specific workflow for inspecting and reusing the existing UI system; it is not itself evidence that the original prompt included these exact words.
+6. **Evidence and limitation:** Commit `d7100f4` (`landing: redesign hero section to match mockup`) changes `templates/landing.html` and adds the landing-page styles in `static/css/landing.css`. The current implementation is inspectable in [templates/landing.html](./templates/landing.html) and [static/css/landing.css](./static/css/landing.css); the documented design constraints are in [.github/skills/frontend-design/SKILL.md](./.github/skills/frontend-design/SKILL.md). This commit and source demonstrate that a mockup-oriented hero redesign exists, but they do not prove the exact AI prompt, the earlier poor output, or the contents of the reference image. No before/after screenshot or prompt transcript was found in the repository.
 
 A verifiable prompt-maintenance issue is that both seed prompts instruct the assistant to inspect `database/db.py`, which is absent; the actual database module is `database/__init__.py`. This is a stale prompt reference, not evidence of an AI-generated runtime defect.
 
@@ -283,5 +290,4 @@ The current quality gate is **not fully green**: the observed pytest run has two
 
 - Resolve and rerun the two failing profile tests.
 - **[TODO — NEED USER INPUT]** Provide evidence that at least one test was written before implementation, if this is a required project claim.
-- **[TODO — NEED USER INPUT]** Provide a documented AI-generated incorrect/incomplete output and its correction for §3.3.
 - Run and record a real Docker build and container health smoke test if deployment verification is required.
